@@ -162,15 +162,25 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .animate-on-scroll {
-  animation: fadeInUp var(--transition-slow) both;
-  animation-timeline: view();
-  animation-range: entry 0% entry 30%;
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.animate-on-scroll.hidden {
+  opacity: 0;
+  transform: translateY(30px);
 }
 
 .animate-left {
-  animation: fadeInLeft var(--transition-slow) both;
-  animation-timeline: view();
-  animation-range: entry 0% entry 30%;
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.animate-left.hidden {
+  opacity: 0;
+  transform: translateX(-30px);
 }
 
 /* ========== BUTTONS ========== */
@@ -1489,5 +1499,12 @@ footer .container {
   </div>
 </footer>
 
+<script>
+document.querySelectorAll('.animate-on-scroll, .animate-left').forEach(el => el.classList.add('hidden'));
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.remove('hidden'); io.unobserve(e.target); }});
+}, { threshold: 0.1 });
+document.querySelectorAll('.animate-on-scroll, .animate-left').forEach(el => io.observe(el));
+</script>
 </body>
 </html>
