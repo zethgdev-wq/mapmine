@@ -1016,6 +1016,7 @@ footer .container {
   .pricing-grid { grid-template-columns: 1fr; max-width: 400px; }
   .pricing-card.featured { transform: none; }
   .pricing-card.featured:hover { transform: translateY(-4px); }
+  .order-form-grid { grid-template-columns: 1fr; }
   .usecases-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -1047,6 +1048,132 @@ footer .container {
   .metric-grid { grid-template-columns: 1fr 1fr; }
   .fields-grid { grid-template-columns: 1fr; }
 }
+
+/* ========== ORDER FORM ========== */
+.order-section {
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.03), transparent, rgba(6, 182, 212, 0.02));
+}
+
+.order-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.order-form-grid .form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.form-group select,
+.form-group input[type="text"],
+.form-group input[type="email"] {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color var(--transition-fast);
+  outline: none;
+}
+
+.form-group select:focus,
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus {
+  border-color: var(--accent-violet);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+.form-group select option {
+  background: #0a1628;
+  color: var(--text-primary);
+}
+
+.form-group .custom-niche {
+  margin-top: 10px;
+  display: none;
+}
+
+.form-group .custom-niche.visible {
+  display: block;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.radio-option:hover {
+  border-color: var(--border-hover);
+}
+
+.radio-option input[type="radio"] {
+  accent-color: var(--accent-violet);
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.radio-option.selected {
+  border-color: var(--accent-violet);
+  background: var(--accent-violet-dim);
+}
+
+.radio-label {
+  flex: 1;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.radio-price {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--accent-cyan);
+}
+
+.order-submit {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.order-submit .btn {
+  min-width: 260px;
+}
+
+.order-note {
+  margin-top: 16px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
 </style>
 </head>
 <body>
@@ -1067,8 +1194,9 @@ footer .container {
       <li><a href="#data">Live Data</a></li>
       <li><a href="#how">How It Works</a></li>
       <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#order">Order</a></li>
       <li><a href="#faq">FAQ</a></li>
-      <li><a href="#pricing" class="btn btn-primary nav-cta">Get Leads</a></li>
+      <li><a href="#order" class="btn btn-primary nav-cta">Get Leads</a></li>
     </ul>
   </div>
 </nav>
@@ -1365,6 +1493,90 @@ footer .container {
   </div>
 </section>
 
+<!-- ========== ORDER FORM ========== -->
+<section class="order-section" id="order">
+  <div class="container">
+    <div style="text-align:center; margin-bottom:48px;" class="animate-on-scroll">
+      <span class="section-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        Start your order
+      </span>
+      <h2 class="section-title">Order Your <span class="gradient-text">Leads</span></h2>
+      <p class="section-subtitle" style="margin-left:auto; margin-right:auto;">Tell us exactly what you need. Delivery within 24 hours.</p>
+    </div>
+
+    <form id="order-form" class="animate-on-scroll" onsubmit="return submitOrder(event)">
+      <div class="order-form-grid">
+
+        <div class="form-group">
+          <label for="niche">Business Niche</label>
+          <select id="niche" name="niche" required onchange="toggleCustomNiche(this)">
+            <option value="" disabled selected>Select a niche...</option>
+            <option value="Dentist">Dentist</option>
+            <option value="Plumber">Plumber</option>
+            <option value="HVAC">HVAC</option>
+            <option value="Electrician">Electrician</option>
+            <option value="Roofer">Roofer</option>
+            <option value="Restaurant">Restaurant</option>
+            <option value="Law Firm">Law Firm</option>
+            <option value="Insurance Agent">Insurance Agent</option>
+            <option value="Real Estate Agent">Real Estate Agent</option>
+            <option value="Chiropractor">Chiropractor</option>
+            <option value="Gym/Fitness">Gym / Fitness</option>
+            <option value="Auto Repair">Auto Repair</option>
+            <option value="Accountant">Accountant</option>
+            <option value="Moving Company">Moving Company</option>
+            <option value="Veterinarian">Veterinarian</option>
+            <option value="Marketing Agency">Marketing Agency</option>
+            <option value="Other">Other (specify below)</option>
+          </select>
+          <input type="text" id="custom-niche" name="custom_niche" class="custom-niche" placeholder="Enter your niche...">
+        </div>
+
+        <div class="form-group">
+          <label for="location">City / Location</label>
+          <input type="text" id="location" name="location" placeholder="e.g. Dallas, TX" required>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Number of Leads</label>
+          <div class="radio-group">
+            <label class="radio-option" onclick="selectRadio(this)">
+              <input type="radio" name="package" value="500 leads - $25" required>
+              <span class="radio-label">500 leads</span>
+              <span class="radio-price">$25</span>
+            </label>
+            <label class="radio-option" onclick="selectRadio(this)">
+              <input type="radio" name="package" value="1500 leads - $50" checked>
+              <span class="radio-label">1,500 leads</span>
+              <span class="radio-price">$50</span>
+            </label>
+            <label class="radio-option selected" onclick="selectRadio(this)">
+              <input type="radio" name="package" value="2500+ leads - $100">
+              <span class="radio-label">2,500+ leads</span>
+              <span class="radio-price">$100</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="email">Email Address (for CSV delivery)</label>
+          <input type="email" id="email" name="email" placeholder="you@company.com" required>
+        </div>
+
+      </div>
+
+      <div class="order-submit">
+        <button type="submit" class="btn btn-primary">
+          Submit Order
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        </button>
+        <p class="order-note">We'll confirm your order via email and deliver your CSV within 24 hours.</p>
+      </div>
+    </form>
+  </div>
+</section>
+
 <!-- ========== WHO IT'S FOR ========== -->
 <section id="usecases">
   <div class="container">
@@ -1478,7 +1690,7 @@ footer .container {
   <div class="container animate-on-scroll">
     <h2 class="section-title">Ready to fill your<br><span class="gradient-text">sales pipeline?</span></h2>
     <p>Email your niche and city. Leads in your inbox by tomorrow.</p>
-    <a href="#pricing" class="btn btn-primary">
+    <a href="#order" class="btn btn-primary">
       Get Your Leads Now
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
     </a>
@@ -1505,6 +1717,57 @@ const io = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) { e.target.classList.remove('hidden'); io.unobserve(e.target); }});
 }, { threshold: 0.1 });
 document.querySelectorAll('.animate-on-scroll, .animate-left').forEach(el => io.observe(el));
+
+// Order form helpers
+function toggleCustomNiche(sel) {
+  var custom = document.getElementById('custom-niche');
+  if (sel.value === 'Other') {
+    custom.classList.add('visible');
+    custom.required = true;
+    custom.focus();
+  } else {
+    custom.classList.remove('visible');
+    custom.required = false;
+    custom.value = '';
+  }
+}
+
+function selectRadio(label) {
+  document.querySelectorAll('.radio-option').forEach(function(el) { el.classList.remove('selected'); });
+  label.classList.add('selected');
+  label.querySelector('input[type="radio"]').checked = true;
+}
+
+function submitOrder(e) {
+  e.preventDefault();
+  var niche = document.getElementById('niche').value;
+  if (niche === 'Other') niche = document.getElementById('custom-niche').value || 'Other';
+  var location = document.getElementById('location').value;
+  var pkg = document.querySelector('input[name="package"]:checked');
+  var pkgVal = pkg ? pkg.value : 'Not selected';
+  var email = document.getElementById('email').value;
+  var subject = encodeURIComponent('MapMine Order: ' + niche + ' in ' + location);
+  var body = encodeURIComponent(
+    'New MapMine Order\n' +
+    '─────────────────\n' +
+    'Niche: ' + niche + '\n' +
+    'Location: ' + location + '\n' +
+    'Package: ' + pkgVal + '\n' +
+    'Deliver to: ' + email + '\n\n' +
+    'Please confirm this order and send payment instructions.'
+  );
+  window.location.href = 'mailto:zethgdev@gmail.com?subject=' + subject + '&body=' + body;
+  return false;
+}
+
+// Initialize the correct radio as selected on load
+(function() {
+  var checked = document.querySelector('.radio-option input[type="radio"]:checked');
+  if (checked) {
+    document.querySelectorAll('.radio-option').forEach(function(el) { el.classList.remove('selected'); });
+    checked.closest('.radio-option').classList.add('selected');
+  }
+})();
 </script>
 </body>
 </html>
