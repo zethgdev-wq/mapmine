@@ -1,1382 +1,1492 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MapMine — Google Maps Leads, Scraped Fresh, Delivered Clean</title>
-    <meta name="description" content="Google Maps leads scraped fresh and delivered clean. Any niche. Any city. 24 hours. From $25.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --bg: #0a0f1a;
-            --bg-deep: #111827;
-            --bg-card: rgba(17, 24, 39, 0.6);
-            --bg-card-solid: #111827;
-            --cyan: #00d4ff;
-            --cyan-dim: rgba(0, 212, 255, 0.1);
-            --cyan-glow: rgba(0, 212, 255, 0.3);
-            --cyan-bright: rgba(0, 212, 255, 0.5);
-            --white: #f0f4f8;
-            --gray: #8899aa;
-            --gray-light: #c0cdd8;
-            --border: rgba(30, 42, 58, 0.8);
-            --glass-bg: rgba(17, 24, 39, 0.5);
-            --glass-border: rgba(255, 255, 255, 0.06);
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(180deg, #0a0f1a 0%, #111827 50%, #0a0f1a 100%);
-            color: var(--white);
-            line-height: 1.6;
-            overflow-x: hidden;
-            background-attachment: fixed;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: radial-gradient(circle at 1px 1px, rgba(0, 212, 255, 0.04) 1px, transparent 0);
-            background-size: 32px 32px;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        h1, h2, h3, h4, h5 {
-            font-family: 'Space Grotesk', sans-serif;
-        }
-
-        .container {
-            max-width: 1140px;
-            margin: 0 auto;
-            padding: 0 24px;
-            position: relative;
-            z-index: 1;
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        /* ---- ANIMATIONS ---- */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-
-        @keyframes countUp {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
-        }
-
-        .animate-in {
-            animation: fadeInUp 0.8s ease-out both;
-        }
-
-        .animate-delay-1 { animation-delay: 0.1s; }
-        .animate-delay-2 { animation-delay: 0.2s; }
-        .animate-delay-3 { animation-delay: 0.3s; }
-        .animate-delay-4 { animation-delay: 0.4s; }
-        .animate-delay-5 { animation-delay: 0.5s; }
-
-        /* ---- GLASS CARD ---- */
-        .glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-        }
-
-        /* ---- NAV ---- */
-        nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            padding: 14px 0;
-            background: rgba(10, 15, 26, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            transition: padding 0.3s;
-        }
-
-        nav .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.35rem;
-            font-weight: 800;
-            color: var(--white);
-            letter-spacing: -0.5px;
-        }
-
-        .logo span {
-            color: var(--cyan);
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 32px;
-        }
-
-        .nav-link {
-            color: var(--gray);
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-link:hover {
-            color: var(--white);
-        }
-
-        .nav-cta {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 10px 24px;
-            background: var(--cyan);
-            color: var(--bg);
-            font-weight: 700;
-            font-size: 0.88rem;
-            border-radius: 8px;
-            letter-spacing: 0.3px;
-            transition: box-shadow 0.3s, transform 0.2s;
-        }
-
-        .nav-cta:hover {
-            box-shadow: 0 0 24px var(--cyan-glow);
-            transform: translateY(-1px);
-        }
-
-        /* ---- HERO ---- */
-        .hero {
-            padding: 160px 0 80px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle, rgba(0, 212, 255, 0.07) 0%, transparent 60%);
-            pointer-events: none;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 16px 6px 8px;
-            background: rgba(0, 212, 255, 0.08);
-            border: 1px solid rgba(0, 212, 255, 0.15);
-            border-radius: 100px;
-            font-size: 0.82rem;
-            color: var(--cyan);
-            font-weight: 600;
-            margin-bottom: 28px;
-            animation: fadeIn 0.6s ease-out both;
-        }
-
-        .hero-badge-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--cyan);
-            border-radius: 50%;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        .hero h1 {
-            font-size: clamp(2.5rem, 5.5vw, 4rem);
-            font-weight: 800;
-            letter-spacing: -2px;
-            line-height: 1.1;
-            margin-bottom: 24px;
-            animation: fadeInUp 0.8s ease-out both;
-        }
-
-        .hero h1 .accent {
-            background: linear-gradient(135deg, var(--cyan) 0%, #7dd3fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero .subtitle {
-            font-size: clamp(1.05rem, 2.2vw, 1.25rem);
-            color: var(--gray-light);
-            max-width: 520px;
-            margin: 0 auto 40px;
-            line-height: 1.7;
-            animation: fadeInUp 0.8s ease-out 0.15s both;
-        }
-
-        .hero-ctas {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-            animation: fadeInUp 0.8s ease-out 0.25s both;
-        }
-
-        .btn-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 16px 36px;
-            background: var(--cyan);
-            color: var(--bg);
-            font-weight: 700;
-            font-size: 1rem;
-            border-radius: 10px;
-            letter-spacing: 0.3px;
-            transition: box-shadow 0.3s, transform 0.2s;
-        }
-
-        .btn-primary:hover {
-            box-shadow: 0 0 30px var(--cyan-glow), 0 4px 20px rgba(0, 212, 255, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 16px 36px;
-            background: transparent;
-            color: var(--gray-light);
-            font-weight: 600;
-            font-size: 1rem;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            transition: all 0.3s;
-        }
-
-        .btn-secondary:hover {
-            border-color: rgba(0, 212, 255, 0.3);
-            color: var(--white);
-            background: rgba(0, 212, 255, 0.04);
-        }
-
-        .hero-stats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 24px;
-            margin-top: 72px;
-            animation: fadeInUp 0.8s ease-out 0.4s both;
-        }
-
-        .hero-stat {
-            text-align: center;
-            padding: 24px 16px;
-            border-radius: 14px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            animation: countUp 0.6s ease-out both;
-        }
-
-        .hero-stat:nth-child(1) { animation-delay: 0.5s; }
-        .hero-stat:nth-child(2) { animation-delay: 0.6s; }
-        .hero-stat:nth-child(3) { animation-delay: 0.7s; }
-        .hero-stat:nth-child(4) { animation-delay: 0.8s; }
-
-        .hero-stat .num {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.9rem;
-            font-weight: 800;
-            color: var(--cyan);
-            letter-spacing: -1px;
-        }
-
-        .hero-stat .label {
-            font-size: 0.82rem;
-            color: var(--gray);
-            margin-top: 4px;
-            font-weight: 500;
-        }
-
-        /* ---- SECTIONS ---- */
-        section {
-            padding: 100px 0;
-            position: relative;
-        }
-
-        .section-label {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--cyan);
-            margin-bottom: 14px;
-        }
-
-        .section-title {
-            font-size: clamp(1.8rem, 3.5vw, 2.5rem);
-            font-weight: 800;
-            margin-bottom: 18px;
-            letter-spacing: -1px;
-            line-height: 1.2;
-        }
-
-        .section-desc {
-            color: var(--gray);
-            max-width: 560px;
-            margin-bottom: 56px;
-            font-size: 1.05rem;
-            line-height: 1.7;
-        }
-
-        .section-desc.center {
-            margin-left: auto;
-            margin-right: auto;
-            text-align: center;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        /* ---- SAMPLE TABLE ---- */
-        #sample {
-            padding-top: 80px;
-        }
-
-        .table-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 14px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            border-radius: 100px;
-            font-size: 0.78rem;
-            color: #10b981;
-            font-weight: 600;
-            margin-bottom: 24px;
-        }
-
-        .table-badge-dot {
-            width: 6px;
-            height: 6px;
-            background: #10b981;
-            border-radius: 50%;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        .table-wrap {
-            overflow-x: auto;
-            border-radius: 16px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 0 60px rgba(0, 212, 255, 0.04), 0 0 1px rgba(0, 212, 255, 0.1);
-        }
-
-        .table-wrap table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 780px;
-        }
-
-        .table-wrap th {
-            background: rgba(0, 212, 255, 0.04);
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.72rem;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--cyan);
-            padding: 16px 20px;
-            text-align: left;
-            border-bottom: 1px solid rgba(0, 212, 255, 0.08);
-        }
-
-        .table-wrap td {
-            padding: 14px 20px;
-            font-size: 0.9rem;
-            color: var(--gray-light);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .table-wrap tr:last-child td {
-            border-bottom: none;
-        }
-
-        .table-wrap tbody tr {
-            transition: background 0.2s;
-        }
-
-        .table-wrap tbody tr:hover td {
-            background: rgba(0, 212, 255, 0.03);
-        }
-
-        .rating {
-            color: var(--cyan);
-            font-weight: 700;
-        }
-
-        .email-cell {
-            color: var(--cyan);
-            font-size: 0.85rem;
-        }
-
-        /* ---- WHAT YOU GET ---- */
-        .data-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-        }
-
-        .data-item {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            padding: 28px 20px;
-            text-align: center;
-            transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
-        }
-
-        .data-item:hover {
-            border-color: rgba(0, 212, 255, 0.2);
-            transform: translateY(-4px);
-            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.06);
-        }
-
-        .data-icon {
-            font-size: 1.8rem;
-            margin-bottom: 14px;
-            display: block;
-            filter: grayscale(0);
-        }
-
-        .data-item h4 {
-            font-size: 0.92rem;
-            font-weight: 600;
-            color: var(--white);
-        }
-
-        .data-item p {
-            font-size: 0.8rem;
-            color: var(--gray);
-            margin-top: 4px;
-        }
-
-        /* ---- HOW IT WORKS ---- */
-        .steps {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-            position: relative;
-        }
-
-        .steps::before {
-            content: '';
-            position: absolute;
-            top: 50px;
-            left: 16.66%;
-            right: 16.66%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.2), transparent);
-            z-index: 0;
-        }
-
-        .step {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 36px 28px;
-            position: relative;
-            text-align: center;
-            transition: border-color 0.3s, transform 0.3s;
-            z-index: 1;
-        }
-
-        .step:hover {
-            border-color: rgba(0, 212, 255, 0.15);
-            transform: translateY(-4px);
-        }
-
-        .step-num {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
-            background: rgba(0, 212, 255, 0.08);
-            border: 1px solid rgba(0, 212, 255, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: var(--cyan);
-        }
-
-        .step h3 {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-            color: var(--white);
-        }
-
-        .step p {
-            color: var(--gray);
-            font-size: 0.92rem;
-            line-height: 1.6;
-        }
-
-        /* ---- PRICING ---- */
-        #pricing {
-            padding-bottom: 80px;
-        }
-
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-            align-items: start;
-        }
-
-        .price-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 40px 32px;
-            text-align: center;
-            transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
-            position: relative;
-        }
-
-        .price-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .price-card.featured {
-            border-color: rgba(0, 212, 255, 0.3);
-            box-shadow: 0 0 60px rgba(0, 212, 255, 0.06);
-            transform: scale(1.03);
-            background: rgba(0, 212, 255, 0.03);
-        }
-
-        .price-card.featured:hover {
-            transform: scale(1.03) translateY(-6px);
-        }
-
-        .price-badge {
-            position: absolute;
-            top: -14px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, var(--cyan) 0%, #7dd3fc 100%);
-            color: var(--bg);
-            font-size: 0.7rem;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            padding: 6px 20px;
-            border-radius: 100px;
-            white-space: nowrap;
-        }
-
-        .price-tier {
-            font-size: 0.82rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--gray);
-            margin-bottom: 16px;
-        }
-
-        .price-amount {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 3.2rem;
-            font-weight: 800;
-            color: var(--white);
-            margin-bottom: 4px;
-            letter-spacing: -2px;
-        }
-
-        .price-amount .currency {
-            font-size: 1.6rem;
-            vertical-align: top;
-            position: relative;
-            top: 10px;
-            color: var(--cyan);
-        }
-
-        .price-period {
-            color: var(--gray);
-            font-size: 0.85rem;
-            margin-bottom: 28px;
-        }
-
-        .price-features {
-            list-style: none;
-            text-align: left;
-            margin-bottom: 32px;
-        }
-
-        .price-features li {
-            padding: 10px 0;
-            color: var(--gray-light);
-            font-size: 0.92rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .price-features li::before {
-            content: '';
-            width: 7px;
-            height: 7px;
-            background: var(--cyan);
-            border-radius: 50%;
-            flex-shrink: 0;
-            box-shadow: 0 0 6px rgba(0, 212, 255, 0.4);
-        }
-
-        .price-features li:last-child {
-            border-bottom: none;
-        }
-
-        .price-btn {
-            display: block;
-            width: 100%;
-            padding: 15px 24px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 0.92rem;
-            letter-spacing: 0.3px;
-            transition: all 0.3s;
-            text-align: center;
-        }
-
-        .price-btn-outline {
-            border: 2px solid var(--border);
-            color: var(--white);
-        }
-
-        .price-btn-outline:hover {
-            border-color: var(--cyan);
-            color: var(--cyan);
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
-        }
-
-        .price-btn-fill {
-            background: linear-gradient(135deg, var(--cyan) 0%, #7dd3fc 100%);
-            color: var(--bg);
-            border: 2px solid transparent;
-        }
-
-        .price-btn-fill:hover {
-            box-shadow: 0 0 30px var(--cyan-glow);
-            transform: translateY(-1px);
-        }
-
-        /* ---- USE CASES ---- */
-        .use-cases-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-        }
-
-        .use-case {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            padding: 24px 20px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            transition: border-color 0.3s, transform 0.2s;
-        }
-
-        .use-case:hover {
-            border-color: rgba(0, 212, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .use-case-icon {
-            font-size: 1.4rem;
-            flex-shrink: 0;
-        }
-
-        .use-case h4 {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--white);
-        }
-
-        .use-case p {
-            font-size: 0.82rem;
-            color: var(--gray);
-            margin-top: 2px;
-        }
-
-        /* ---- FAQ ---- */
-        .faq-list {
-            max-width: 720px;
-            margin: 0 auto;
-        }
-
-        .faq-item {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-        }
-
-        .faq-item:last-child {
-            border-bottom: none;
-        }
-
-        .faq-toggle {
-            display: none;
-        }
-
-        .faq-question {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 22px 0;
-            cursor: pointer;
-            user-select: none;
-            transition: color 0.2s;
-        }
-
-        .faq-question:hover {
-            color: var(--cyan);
-        }
-
-        .faq-question h4 {
-            font-size: 1.02rem;
-            font-weight: 600;
-        }
-
-        .faq-arrow {
-            width: 24px;
-            height: 24px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.3s;
-            color: var(--gray);
-        }
-
-        .faq-answer {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s ease, padding 0.4s ease;
-        }
-
-        .faq-answer p {
-            color: var(--gray);
-            font-size: 0.95rem;
-            line-height: 1.7;
-            padding-bottom: 22px;
-        }
-
-        .faq-toggle:checked ~ .faq-answer {
-            max-height: 200px;
-        }
-
-        .faq-toggle:checked ~ .faq-question .faq-arrow {
-            transform: rotate(45deg);
-            color: var(--cyan);
-        }
-
-        /* ---- FINAL CTA ---- */
-        .final-cta {
-            text-align: center;
-            padding: 120px 0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .final-cta::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 700px;
-            height: 700px;
-            background: radial-gradient(circle, rgba(0, 212, 255, 0.06) 0%, transparent 60%);
-            pointer-events: none;
-        }
-
-        .final-cta h2 {
-            font-size: clamp(2rem, 4vw, 3rem);
-            margin-bottom: 16px;
-            position: relative;
-            letter-spacing: -1px;
-        }
-
-        .final-cta p {
-            color: var(--gray);
-            font-size: 1.1rem;
-            margin-bottom: 40px;
-            position: relative;
-            max-width: 480px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .final-cta .btn-primary {
-            position: relative;
-        }
-
-        /* ---- FOOTER ---- */
-        footer {
-            border-top: 1px solid rgba(255, 255, 255, 0.04);
-            padding: 56px 0 40px;
-        }
-
-        .footer-grid {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 40px;
-        }
-
-        .footer-brand .logo {
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        .footer-brand p {
-            color: var(--gray);
-            font-size: 0.88rem;
-            max-width: 280px;
-            line-height: 1.6;
-        }
-
-        .footer-col h4 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.75rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--gray);
-            margin-bottom: 14px;
-        }
-
-        .footer-col a {
-            display: block;
-            color: var(--gray-light);
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-            transition: color 0.2s;
-        }
-
-        .footer-col a:hover {
-            color: var(--cyan);
-        }
-
-        .footer-bottom {
-            margin-top: 40px;
-            padding-top: 24px;
-            border-top: 1px solid rgba(255, 255, 255, 0.04);
-            text-align: center;
-            color: var(--gray);
-            font-size: 0.82rem;
-        }
-
-        /* ---- RESPONSIVE ---- */
-        @media (max-width: 1024px) {
-            .data-grid { grid-template-columns: repeat(4, 1fr); }
-            .pricing-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-
-        @media (max-width: 768px) {
-            .hero { padding: 130px 0 60px; }
-            section { padding: 70px 0; }
-            .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-            .data-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
-            .steps { grid-template-columns: 1fr; }
-            .steps::before { display: none; }
-            .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
-            .price-card.featured { transform: none; }
-            .price-card.featured:hover { transform: translateY(-6px); }
-            .use-cases-grid { grid-template-columns: repeat(2, 1fr); }
-            .footer-grid { flex-direction: column; }
-            .nav-link { display: none; }
-        }
-
-        @media (max-width: 480px) {
-            .hero h1 { font-size: 2rem; letter-spacing: -1px; }
-            .hero-ctas { flex-direction: column; }
-            .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
-            .hero-stats { grid-template-columns: repeat(2, 1fr); }
-            .data-grid { grid-template-columns: repeat(2, 1fr); }
-            .use-cases-grid { grid-template-columns: 1fr; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapMine — Turn Google Maps Into Your Lead Machine</title>
+<meta name="description" content="Fresh business leads scraped from Google Maps. Verified emails, real phone numbers, any niche, any city. CSV delivered in 24 hours.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ========== CUSTOM PROPERTIES ========== */
+:root {
+  --bg-primary: #050510;
+  --bg-secondary: #0a1628;
+  --bg-tertiary: #0d0d2b;
+  --accent-violet: #7c3aed;
+  --accent-cyan: #06b6d4;
+  --accent-violet-dim: rgba(124, 58, 237, 0.15);
+  --accent-cyan-dim: rgba(6, 182, 212, 0.1);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-subtle: rgba(148, 163, 184, 0.08);
+  --border-hover: rgba(124, 58, 237, 0.4);
+  --glass-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(148, 163, 184, 0.1);
+  --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-med: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== RESET & BASE ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ========== ANIMATED BACKGROUND MESH ========== */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 20%, rgba(124, 58, 237, 0.08), transparent),
+    radial-gradient(ellipse 60% 80% at 80% 80%, rgba(6, 182, 212, 0.06), transparent),
+    radial-gradient(ellipse 50% 50% at 50% 50%, rgba(13, 13, 43, 0.5), transparent);
+  animation: meshShift 12s ease-in-out infinite alternate;
+}
+
+@keyframes meshShift {
+  0% {
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 20%, rgba(124, 58, 237, 0.08), transparent),
+      radial-gradient(ellipse 60% 80% at 80% 80%, rgba(6, 182, 212, 0.06), transparent),
+      radial-gradient(ellipse 50% 50% at 50% 50%, rgba(13, 13, 43, 0.5), transparent);
+  }
+  33% {
+    background:
+      radial-gradient(ellipse 70% 70% at 60% 30%, rgba(124, 58, 237, 0.1), transparent),
+      radial-gradient(ellipse 80% 60% at 20% 70%, rgba(6, 182, 212, 0.07), transparent),
+      radial-gradient(ellipse 50% 50% at 50% 50%, rgba(10, 22, 40, 0.5), transparent);
+  }
+  66% {
+    background:
+      radial-gradient(ellipse 60% 80% at 40% 60%, rgba(124, 58, 237, 0.07), transparent),
+      radial-gradient(ellipse 70% 50% at 70% 20%, rgba(6, 182, 212, 0.09), transparent),
+      radial-gradient(ellipse 50% 50% at 50% 50%, rgba(5, 5, 16, 0.5), transparent);
+  }
+  100% {
+    background:
+      radial-gradient(ellipse 80% 60% at 30% 40%, rgba(124, 58, 237, 0.09), transparent),
+      radial-gradient(ellipse 60% 80% at 60% 60%, rgba(6, 182, 212, 0.08), transparent),
+      radial-gradient(ellipse 50% 50% at 50% 50%, rgba(13, 13, 43, 0.5), transparent);
+  }
+}
+
+/* ========== LAYOUT ========== */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+section {
+  padding: 100px 0;
+}
+
+/* ========== TYPOGRAPHY ========== */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  line-height: 1.15;
+}
+
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-violet);
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin-bottom: 48px;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent-violet), var(--accent-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ========== SCROLL ANIMATIONS ========== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-on-scroll {
+  animation: fadeInUp var(--transition-slow) both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 30%;
+}
+
+.animate-left {
+  animation: fadeInLeft var(--transition-slow) both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 30%;
+}
+
+/* ========== BUTTONS ========== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-violet), #6d28d9);
+  color: var(--text-primary);
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 30px rgba(124, 58, 237, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--glass-border);
+}
+
+.btn-ghost:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.05);
+}
+
+/* ========== CARDS (glass) ========== */
+.glass-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all var(--transition-med);
+}
+
+.glass-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(124, 58, 237, 0.1);
+}
+
+/* ========== NAV ========== */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 16px 0;
+  background: rgba(5, 5, 16, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+nav .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-logo {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-logo svg {
+  width: 28px;
+  height: 28px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.nav-links a:hover { color: var(--text-primary); }
+
+.nav-cta {
+  padding: 10px 22px !important;
+  font-size: 0.85rem !important;
+}
+
+/* ========== HERO ========== */
+.hero {
+  padding: 160px 0 100px;
+  text-align: center;
+  position: relative;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+}
+
+.pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  animation: fadeIn 0.6s ease both;
+}
+
+.pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 800;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+
+.hero-title .line1 {
+  display: block;
+  animation: fadeInUp 0.6s ease both;
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+.hero-title .line2 {
+  display: block;
+  animation: fadeInUp 0.6s ease both;
+  animation-delay: 0.5s;
+  opacity: 0;
+}
+
+.hero-subtitle {
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  color: var(--text-secondary);
+  max-width: 640px;
+  margin: 0 auto 40px;
+  line-height: 1.7;
+  animation: fadeInUp 0.6s ease both;
+  animation-delay: 0.8s;
+  opacity: 0;
+}
+
+.hero-ctas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 72px;
+  animation: fadeInUp 0.6s ease both;
+  animation-delay: 1s;
+  opacity: 0;
+  flex-wrap: wrap;
+}
+
+/* ========== METRIC CARDS ========== */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  animation: fadeInUp 0.6s ease both;
+  animation-delay: 1.2s;
+  opacity: 0;
+}
+
+.metric-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 28px 20px;
+  text-align: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all var(--transition-med);
+}
+
+.metric-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.1);
+}
+
+.metric-value {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.metric-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ========== LIVE DATA TABLE ========== */
+.data-section {
+  background: linear-gradient(180deg, transparent, rgba(124, 58, 237, 0.02), transparent);
+}
+
+.data-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 800px;
+}
+
+thead {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+th {
+  padding: 16px 20px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.email-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #22c55e;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.verified-badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+td {
+  padding: 14px 20px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+
+tr {
+  transition: background var(--transition-fast);
+}
+
+tbody tr:hover {
+  background: rgba(124, 58, 237, 0.04);
+}
+
+tbody tr:last-child td { border-bottom: none; }
+
+.td-name {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.td-email {
+  color: var(--accent-cyan);
+  font-size: 0.85rem;
+}
+
+.td-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.td-rating svg {
+  width: 14px;
+  height: 14px;
+  fill: #facc15;
+}
+
+/* Staggered row animation */
+tbody tr:nth-child(1) { animation: fadeInLeft 0.5s ease both; animation-delay: 0.1s; }
+tbody tr:nth-child(2) { animation: fadeInLeft 0.5s ease both; animation-delay: 0.2s; }
+tbody tr:nth-child(3) { animation: fadeInLeft 0.5s ease both; animation-delay: 0.3s; }
+tbody tr:nth-child(4) { animation: fadeInLeft 0.5s ease both; animation-delay: 0.4s; }
+tbody tr:nth-child(5) { animation: fadeInLeft 0.5s ease both; animation-delay: 0.5s; }
+
+.table-footer {
+  text-align: center;
+  padding: 32px 0 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* ========== DATA FIELDS GRID ========== */
+.fields-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.field-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  transition: all var(--transition-med);
+}
+
+.field-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.08);
+  transform: translateY(-2px);
+}
+
+.field-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-violet-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.field-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--accent-violet);
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.field-name {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+
+.field-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ========== HOW IT WORKS ========== */
+.steps-section {
+  text-align: center;
+}
+
+.steps-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.step {
+  flex: 1;
+  text-align: center;
+  padding: 0 24px;
+  position: relative;
+}
+
+.step-num {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-violet), var(--accent-cyan));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  position: relative;
+  z-index: 2;
+}
+
+.step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 28px;
+  left: calc(50% + 36px);
+  width: calc(100% - 72px);
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-violet), var(--accent-cyan));
+  opacity: 0.3;
+  z-index: 1;
+}
+
+.step-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  margin-bottom: 8px;
+}
+
+.step-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ========== PRICING ========== */
+.pricing-section {
+  background: linear-gradient(180deg, transparent, rgba(6, 182, 212, 0.02), transparent);
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.pricing-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 36px 32px;
+  text-align: center;
+  transition: all var(--transition-med);
+  position: relative;
+}
+
+.pricing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+
+.pricing-card.featured {
+  border-color: var(--accent-violet);
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.08), var(--glass-bg));
+  transform: scale(1.04);
+  z-index: 2;
+}
+
+.pricing-card.featured:hover {
+  transform: scale(1.04) translateY(-4px);
+}
+
+.pricing-popular {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 20px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--accent-violet), var(--accent-cyan));
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.pricing-tier {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.pricing-price {
+  font-family: var(--font-heading);
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.pricing-price span {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.pricing-leads {
+  font-size: 0.9rem;
+  color: var(--accent-cyan);
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+
+.pricing-features {
+  list-style: none;
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.pricing-features li {
+  padding: 8px 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.pricing-features li:last-child { border-bottom: none; }
+
+.pricing-features li::before {
+  content: '';
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.1);
+  flex-shrink: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 10px;
+}
+
+.pricing-card .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ========== USE CASES ========== */
+.usecases-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.usecase-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  transition: all var(--transition-med);
+}
+
+.usecase-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+}
+
+.usecase-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-cyan-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.usecase-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke: var(--accent-cyan);
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.usecase-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.usecase-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ========== FAQ ========== */
+.faq-section {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+details {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+details:hover {
+  border-color: var(--border-hover);
+}
+
+details[open] {
+  border-color: rgba(124, 58, 237, 0.3);
+}
+
+summary {
+  padding: 20px 24px;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1rem;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+summary::-webkit-details-marker { display: none; }
+
+summary::after {
+  content: '+';
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  transition: transform var(--transition-fast);
+  flex-shrink: 0;
+}
+
+details[open] summary::after {
+  transform: rotate(45deg);
+  color: var(--accent-violet);
+}
+
+details .faq-answer {
+  padding: 0 24px 20px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* ========== FINAL CTA ========== */
+.final-cta {
+  text-align: center;
+  position: relative;
+  padding: 120px 0;
+}
+
+.final-cta::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.12), rgba(6, 182, 212, 0.06), transparent 70%);
+  pointer-events: none;
+}
+
+.final-cta .section-title {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  margin-bottom: 16px;
+}
+
+.final-cta p {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 500px;
+  margin: 0 auto 40px;
+}
+
+.final-cta .btn-primary {
+  padding: 18px 40px;
+  font-size: 1.05rem;
+}
+
+/* ========== FOOTER ========== */
+footer {
+  border-top: 1px solid var(--border-subtle);
+  padding: 40px 0;
+}
+
+footer .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.footer-brand {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+}
+
+.footer-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color var(--transition-fast);
+}
+
+.footer-links a:hover { color: var(--text-secondary); }
+
+.footer-copy {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+  .metric-grid { grid-template-columns: repeat(2, 1fr); }
+  .fields-grid { grid-template-columns: repeat(2, 1fr); }
+  .pricing-grid { grid-template-columns: 1fr; max-width: 400px; }
+  .pricing-card.featured { transform: none; }
+  .pricing-card.featured:hover { transform: translateY(-4px); }
+  .usecases-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  section { padding: 72px 0; }
+  .hero { padding: 130px 0 72px; }
+
+  .nav-links { display: none; }
+
+  .metric-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .metric-card { padding: 20px 16px; }
+
+  .fields-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .steps-row { flex-direction: column; gap: 36px; }
+  .step:not(:last-child)::after { display: none; }
+
+  .usecases-grid { grid-template-columns: 1fr; }
+
+  .hero-ctas { flex-direction: column; }
+  .hero-ctas .btn { width: 100%; justify-content: center; }
+
+  footer .container { flex-direction: column; text-align: center; }
+  .footer-left { flex-direction: column; }
+}
+
+@media (max-width: 480px) {
+  .container { padding: 0 16px; }
+  .metric-grid { grid-template-columns: 1fr 1fr; }
+  .fields-grid { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
 
-<!-- NAV -->
+<!-- ========== NAV ========== -->
 <nav>
-    <div class="container">
-        <a href="#" class="logo"><span>Map</span>Mine</a>
-        <div class="nav-links">
-            <a href="#pricing" class="nav-link">Pricing</a>
-            <a href="mailto:zethgdev@gmail.com?subject=Lead%20Order&body=I%20need%20leads%20for%20[niche]%20in%20[city]." class="nav-cta">Order Now</a>
-        </div>
-    </div>
+  <div class="container">
+    <a href="#" class="nav-logo">
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="28" height="28" rx="6" fill="url(#nav-grad)"/>
+        <path d="M8 14L12 8L16 14L20 8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8 20L12 14L16 20L20 14" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+        <defs><linearGradient id="nav-grad" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#7c3aed"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs>
+      </svg>
+      MapMine
+    </a>
+    <ul class="nav-links">
+      <li><a href="#data">Live Data</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="mailto:zethgdev@gmail.com?subject=MapMine%20%E2%80%94%20I%20need%20leads&body=Niche%3A%20%0ACity%3A%20%0AHow%20many%20leads%3A%20" class="btn btn-primary nav-cta">Get Leads</a></li>
+    </ul>
+  </div>
 </nav>
 
-<!-- HERO -->
+<!-- ========== HERO ========== -->
 <section class="hero">
-    <div class="container">
-        <div class="hero-badge">
-            <span class="hero-badge-dot"></span>
-            Accepting orders now
-        </div>
-        <h1>Google Maps leads.<br><span class="accent">Scraped fresh. Delivered clean.</span></h1>
-        <p class="subtitle">Any niche. Any city. 24 hours. From $25.</p>
-        <div class="hero-ctas">
-            <a href="mailto:zethgdev@gmail.com?subject=Lead%20Order&body=I%20need%20leads%20for%20[niche]%20in%20[city]." class="btn-primary">Order Now</a>
-            <a href="#sample" class="btn-secondary">See Sample Data</a>
-        </div>
-        <div class="hero-stats">
-            <div class="hero-stat">
-                <div class="num">10,000+</div>
-                <div class="label">Leads Scraped</div>
-            </div>
-            <div class="hero-stat">
-                <div class="num">50+</div>
-                <div class="label">Cities</div>
-            </div>
-            <div class="hero-stat">
-                <div class="num">&lt; 24h</div>
-                <div class="label">Delivery</div>
-            </div>
-            <div class="hero-stat">
-                <div class="num">99%</div>
-                <div class="label">Data Accuracy</div>
-            </div>
-        </div>
+  <div class="container">
+    <div class="pill-badge">
+      <span class="pill-dot"></span>
+      Trusted by 50+ sales teams
     </div>
+
+    <h1 class="hero-title">
+      <span class="line1">Turn Google Maps</span>
+      <span class="line2 gradient-text">into your lead machine</span>
+    </h1>
+
+    <p class="hero-subtitle">
+      We scrape fresh business data from Google Maps. Verified emails. Real phone numbers. Any niche, any city. Delivered as CSV in 24 hours.
+    </p>
+
+    <div class="hero-ctas">
+      <a href="mailto:zethgdev@gmail.com?subject=MapMine%20%E2%80%94%20I%20need%20leads&body=Niche%3A%20%0ACity%3A%20%0AHow%20many%20leads%3A%20" class="btn btn-primary">
+        Get Your Leads
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="#data" class="btn btn-ghost">
+        See live data
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>
+      </a>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-value">10,000+</div>
+        <div class="metric-label">Leads scraped</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">50+</div>
+        <div class="metric-label">Cities covered</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">&lt;24h</div>
+        <div class="metric-label">Delivery time</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">99%</div>
+        <div class="metric-label">Data accuracy</div>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- SAMPLE TABLE -->
-<section id="sample">
-    <div class="container">
-        <div class="text-center">
-            <p class="section-label">Live Sample</p>
-            <h2 class="section-title">Real data. Not a mockup.</h2>
-            <p class="section-desc center">Every row below was scraped from Google Maps and verified. This is exactly what you receive.</p>
-        </div>
-        <div style="text-align: center; margin-bottom: 20px;">
-            <span class="table-badge"><span class="table-badge-dot"></span> Verified real data</span>
-        </div>
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Business</th>
-                        <th>Phone</th>
-                        <th>Email</th>
-                        <th>Rating</th>
-                        <th>Reviews</th>
-                        <th>City</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Midtown Family Dentistry</td>
-                        <td>(469) 529-6016</td>
-                        <td class="email-cell">info@midtowndentistrydallas.com</td>
-                        <td class="rating">4.9</td>
-                        <td>3,481</td>
-                        <td>Dallas, TX</td>
-                    </tr>
-                    <tr>
-                        <td>A-1 Total Service Plumbing</td>
-                        <td>(323) 643-2844</td>
-                        <td class="email-cell">info@a-1totalserviceplumbing.com</td>
-                        <td class="rating">4.9</td>
-                        <td>1,505</td>
-                        <td>Los Angeles, CA</td>
-                    </tr>
-                    <tr>
-                        <td>Pacific Plumbing Team</td>
-                        <td>(323) 645-2537</td>
-                        <td class="email-cell">info@pacificplumbingteam.com</td>
-                        <td class="rating">5.0</td>
-                        <td>287</td>
-                        <td>Los Angeles, CA</td>
-                    </tr>
-                    <tr>
-                        <td>Dallas Dental Arts</td>
-                        <td>(214) 999-0110</td>
-                        <td class="email-cell">info@dallasdentalspa.com</td>
-                        <td class="rating">4.9</td>
-                        <td>392</td>
-                        <td>Dallas, TX</td>
-                    </tr>
-                    <tr>
-                        <td>Botanist Restaurant</td>
-                        <td>(604) 695-5500</td>
-                        <td class="email-cell">olivia@fairmont.com</td>
-                        <td class="rating">4.6</td>
-                        <td>1,876</td>
-                        <td>Vancouver, BC</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+<!-- ========== LIVE DATA ========== -->
+<section class="data-section" id="data">
+  <div class="container">
+    <div class="data-header animate-on-scroll">
+      <span class="section-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        Live data proof
+      </span>
+      <h2 class="section-title">This isn't a mockup.<br><span class="gradient-text">This is real data.</span></h2>
     </div>
+
+    <div class="table-wrapper animate-on-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Business Name</th>
+            <th>Phone</th>
+            <th>
+              <span class="email-header">
+                Email
+                <span class="verified-badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  Verified
+                </span>
+              </span>
+            </th>
+            <th>Rating</th>
+            <th>Reviews</th>
+            <th>Location</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-name">Midtown Family Dentistry</td>
+            <td>(469) 529-6016</td>
+            <td class="td-email">info@midtowndentistrydallas.com</td>
+            <td><span class="td-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> 4.9</span></td>
+            <td>3,481</td>
+            <td>Dallas, TX</td>
+          </tr>
+          <tr>
+            <td class="td-name">A-1 Total Service Plumbing</td>
+            <td>(323) 643-2844</td>
+            <td class="td-email">info@a-1totalserviceplumbing.com</td>
+            <td><span class="td-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> 4.9</span></td>
+            <td>1,505</td>
+            <td>Los Angeles, CA</td>
+          </tr>
+          <tr>
+            <td class="td-name">Pacific Plumbing Team</td>
+            <td>(323) 645-2537</td>
+            <td class="td-email">info@pacificplumbingteam.com</td>
+            <td><span class="td-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> 5.0</span></td>
+            <td>287</td>
+            <td>Los Angeles, CA</td>
+          </tr>
+          <tr>
+            <td class="td-name">Dallas Dental Arts</td>
+            <td>(214) 999-0110</td>
+            <td class="td-email">info@dallasdentalspa.com</td>
+            <td><span class="td-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> 4.9</span></td>
+            <td>392</td>
+            <td>Dallas, TX</td>
+          </tr>
+          <tr>
+            <td class="td-name">Botanist Restaurant</td>
+            <td>(604) 695-5500</td>
+            <td class="td-email">olivia@fairmont.com</td>
+            <td><span class="td-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> 4.6</span></td>
+            <td>1,876</td>
+            <td>Vancouver, BC</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="table-footer animate-on-scroll">Want to see more? Order a custom sample for your niche.</p>
+  </div>
 </section>
 
-<!-- WHAT YOU GET -->
-<section>
-    <div class="container">
-        <div class="text-center">
-            <p class="section-label">What You Get</p>
-            <h2 class="section-title">Every data point that matters</h2>
-            <p class="section-desc center">Each lead is verified and formatted. No duplicates, no blanks, no garbage data.</p>
-        </div>
-        <div class="data-grid">
-            <div class="data-item">
-                <span class="data-icon">&#127970;</span>
-                <h4>Business Name</h4>
-                <p>Full legal name</p>
-            </div>
-            <div class="data-item">
-                <span class="data-icon">&#128222;</span>
-                <h4>Phone</h4>
-                <p>Direct line</p>
-            </div>
-            <div class="data-item">
-                <span class="data-icon">&#9993;&#65039;</span>
-                <h4>Email</h4>
-                <p>Domain verified</p>
-            </div>
-            <div class="data-item">
-                <span class="data-icon">&#127760;</span>
-                <h4>Website</h4>
-                <p>Live URL</p>
-            </div>
-            <div class="data-item">
-                <span class="data-icon">&#128205;</span>
-                <h4>Address</h4>
-                <p>Full street address</p>
-            </div>
-            <div class="data-item">
-                <span class="data-icon">&#11088;</span>
-                <h4>Rating</h4>
-                <p>Google Maps score</p>
-            </div>
-            <div class="data-item">
-                <span class="data-icon">&#128172;</span>
-                <h4>Reviews</h4>
-                <p>Total count</p>
-            </div>
-            <div class="data-item">
-                <span class="data-icon">&#127991;&#65039;</span>
-                <h4>Category</h4>
-                <p>Business type</p>
-            </div>
-        </div>
+<!-- ========== DATA FIELDS ========== -->
+<section id="fields">
+  <div class="container">
+    <div style="text-align:center; margin-bottom:48px;" class="animate-on-scroll">
+      <span class="section-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+        Complete data
+      </span>
+      <h2 class="section-title">Everything you need <span class="gradient-text">in every lead</span></h2>
+      <p class="section-subtitle" style="margin-left:auto;margin-right:auto;">Each row comes loaded with 8 verified data points, ready to drop into your CRM or cold email tool.</p>
     </div>
+
+    <div class="fields-grid">
+      <div class="field-card animate-on-scroll">
+        <div class="field-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>
+        </div>
+        <div class="field-name">Business Name</div>
+        <div class="field-desc">Exact name as listed on Google Maps</div>
+      </div>
+      <div class="field-card animate-on-scroll">
+        <div class="field-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+        </div>
+        <div class="field-name">Phone Number</div>
+        <div class="field-desc">Direct business line, ready to dial</div>
+      </div>
+      <div class="field-card animate-on-scroll">
+        <div class="field-icon" style="background: rgba(6,182,212,0.1);">
+          <svg viewBox="0 0 24 24" style="stroke: var(--accent-cyan);"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg>
+        </div>
+        <div class="field-name">Email Address</div>
+        <div class="field-desc">Verified and deliverable</div>
+      </div>
+      <div class="field-card animate-on-scroll">
+        <div class="field-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+        </div>
+        <div class="field-name">Website URL</div>
+        <div class="field-desc">Homepage link for every business</div>
+      </div>
+      <div class="field-card animate-on-scroll">
+        <div class="field-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="field-name">Full Address</div>
+        <div class="field-desc">Street, city, state, ZIP code</div>
+      </div>
+      <div class="field-card animate-on-scroll">
+        <div class="field-icon">
+          <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="field-name">Google Rating</div>
+        <div class="field-desc">Star rating from Google reviews</div>
+      </div>
+      <div class="field-card animate-on-scroll">
+        <div class="field-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <div class="field-name">Review Count</div>
+        <div class="field-desc">Total reviews, gauge business activity</div>
+      </div>
+      <div class="field-card animate-on-scroll">
+        <div class="field-icon">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        </div>
+        <div class="field-name">Business Category</div>
+        <div class="field-desc">Google Maps primary category tag</div>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- HOW IT WORKS -->
-<section>
-    <div class="container">
-        <div class="text-center">
-            <p class="section-label">How It Works</p>
-            <h2 class="section-title">Three steps. Zero effort.</h2>
-            <p class="section-desc center">Tell us what you need. We handle everything else.</p>
-        </div>
-        <div class="steps">
-            <div class="step">
-                <div class="step-num">1</div>
-                <h3>Tell us your niche + city</h3>
-                <p>"Plumbers in Dallas" or "Dentists in Vancouver" -- whatever vertical you sell into.</p>
-            </div>
-            <div class="step">
-                <div class="step-num">2</div>
-                <h3>We scrape Google Maps</h3>
-                <p>Our pipeline pulls real-time data, deduplicates, and validates every phone and email.</p>
-            </div>
-            <div class="step">
-                <div class="step-num">3</div>
-                <h3>Get clean CSV in 24 hours</h3>
-                <p>Ready to import into your CRM, dialer, or email tool. No cleanup needed.</p>
-            </div>
-        </div>
+<!-- ========== HOW IT WORKS ========== -->
+<section class="steps-section" id="how">
+  <div class="container">
+    <div class="animate-on-scroll" style="margin-bottom:56px;">
+      <span class="section-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+        Simple process
+      </span>
+      <h2 class="section-title">Three steps to <span class="gradient-text">fresh leads</span></h2>
     </div>
+
+    <div class="steps-row animate-on-scroll">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3 class="step-title">Tell us your niche + city</h3>
+        <p class="step-desc">Email us with your target industry and locations. Dentists in Dallas? Plumbers in LA? We've got it.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3 class="step-title">We scrape Google Maps live</h3>
+        <p class="step-desc">Our system pulls fresh data directly from Google Maps. Names, phones, emails, ratings, addresses.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3 class="step-title">Get clean CSV in 24h</h3>
+        <p class="step-desc">Receive a ready-to-import file with verified data. Drop it into your CRM and start reaching out.</p>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- PRICING -->
-<section id="pricing">
-    <div class="container">
-        <div class="text-center">
-            <p class="section-label">Pricing</p>
-            <h2 class="section-title">Simple. Transparent. One-time.</h2>
-            <p class="section-desc center">No subscriptions. No hidden fees. Pay once, get your leads.</p>
-        </div>
-        <div class="pricing-grid">
-            <div class="price-card">
-                <div class="price-tier">Starter</div>
-                <div class="price-amount"><span class="currency">$</span>25</div>
-                <div class="price-period">one-time</div>
-                <ul class="price-features">
-                    <li>500 verified leads</li>
-                    <li>1 city</li>
-                    <li>1 niche</li>
-                    <li>CSV delivery</li>
-                    <li>24-hour turnaround</li>
-                </ul>
-                <a href="mailto:zethgdev@gmail.com?subject=Starter%20Lead%20Order%20-%20%2425&body=I%20need%20leads%20for%20[niche]%20in%20[city].%20Starter%20tier." class="price-btn price-btn-outline">Get Started</a>
-            </div>
-            <div class="price-card featured">
-                <div class="price-badge">Most Popular</div>
-                <div class="price-tier">Pro</div>
-                <div class="price-amount"><span class="currency">$</span>50</div>
-                <div class="price-period">one-time</div>
-                <ul class="price-features">
-                    <li>1,500 verified leads</li>
-                    <li>Up to 3 cities</li>
-                    <li>Multiple niches</li>
-                    <li>CSV + Excel delivery</li>
-                    <li>Same-day turnaround</li>
-                </ul>
-                <a href="mailto:zethgdev@gmail.com?subject=Pro%20Lead%20Order%20-%20%2450&body=I%20need%20leads%20for%20[niche]%20in%20[city].%20Pro%20tier." class="price-btn price-btn-fill">Get Started</a>
-            </div>
-            <div class="price-card">
-                <div class="price-tier">Enterprise</div>
-                <div class="price-amount"><span class="currency">$</span>100</div>
-                <div class="price-period">one-time</div>
-                <ul class="price-features">
-                    <li>2,500+ verified leads</li>
-                    <li>Unlimited cities</li>
-                    <li>All niches</li>
-                    <li>CSV + Excel + Sheets</li>
-                    <li>Priority delivery</li>
-                </ul>
-                <a href="mailto:zethgdev@gmail.com?subject=Enterprise%20Lead%20Order%20-%20%24100&body=I%20need%20leads%20for%20[niche]%20in%20[city].%20Enterprise%20tier." class="price-btn price-btn-outline">Get Started</a>
-            </div>
-        </div>
+<!-- ========== PRICING ========== -->
+<section class="pricing-section" id="pricing">
+  <div class="container">
+    <div style="text-align:center; margin-bottom:56px;" class="animate-on-scroll">
+      <span class="section-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        Transparent pricing
+      </span>
+      <h2 class="section-title">Pick your <span class="gradient-text">lead volume</span></h2>
+      <p class="section-subtitle" style="margin-left:auto;margin-right:auto;">No subscriptions. No hidden fees. Pay per order.</p>
     </div>
+
+    <div class="pricing-grid">
+      <div class="pricing-card animate-on-scroll">
+        <div class="pricing-tier">Starter</div>
+        <div class="pricing-price">$25</div>
+        <div class="pricing-leads">500 leads</div>
+        <ul class="pricing-features">
+          <li>1 city</li>
+          <li>1 niche</li>
+          <li>CSV format</li>
+          <li>24h turnaround</li>
+          <li>Email support</li>
+        </ul>
+        <a href="mailto:zethgdev@gmail.com?subject=MapMine%20Starter%20%E2%80%94%20%2425%20%2F%20500%20leads&body=Niche%3A%20%0ACity%3A%20" class="btn btn-ghost">Get Started</a>
+      </div>
+
+      <div class="pricing-card featured animate-on-scroll">
+        <div class="pricing-popular">Most Popular</div>
+        <div class="pricing-tier">Pro</div>
+        <div class="pricing-price">$50</div>
+        <div class="pricing-leads">1,500 leads</div>
+        <ul class="pricing-features">
+          <li>3 cities</li>
+          <li>Multiple niches</li>
+          <li>CSV + Excel</li>
+          <li>Same-day delivery</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="mailto:zethgdev@gmail.com?subject=MapMine%20Pro%20%E2%80%94%20%2450%20%2F%201%2C500%20leads&body=Niches%3A%20%0ACities%3A%20" class="btn btn-primary">Get Pro Leads</a>
+      </div>
+
+      <div class="pricing-card animate-on-scroll">
+        <div class="pricing-tier">Enterprise</div>
+        <div class="pricing-price">$100</div>
+        <div class="pricing-leads">2,500+ leads</div>
+        <ul class="pricing-features">
+          <li>Unlimited cities</li>
+          <li>All niches</li>
+          <li>All formats</li>
+          <li>Priority delivery</li>
+          <li>Dedicated support</li>
+        </ul>
+        <a href="mailto:zethgdev@gmail.com?subject=MapMine%20Enterprise%20%E2%80%94%20%24100%20%2F%202%2C500%2B%20leads&body=Niches%3A%20%0ACities%3A%20%0AVolume%3A%20" class="btn btn-ghost">Contact Us</a>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- USE CASES -->
-<section>
-    <div class="container">
-        <div class="text-center">
-            <p class="section-label">Use Cases</p>
-            <h2 class="section-title">Built for teams that close deals</h2>
-            <p class="section-desc center">Whether you cold call, cold email, or door knock -- we supply the targets.</p>
-        </div>
-        <div class="use-cases-grid">
-            <div class="use-case">
-                <span class="use-case-icon">&#128231;</span>
-                <div>
-                    <h4>Cold Email Agencies</h4>
-                    <p>Fresh contacts for outbound campaigns</p>
-                </div>
-            </div>
-            <div class="use-case">
-                <span class="use-case-icon">&#127968;</span>
-                <div>
-                    <h4>Real Estate Agents</h4>
-                    <p>Local business owner lists by zip</p>
-                </div>
-            </div>
-            <div class="use-case">
-                <span class="use-case-icon">&#128737;&#65039;</span>
-                <div>
-                    <h4>Insurance Prospecting</h4>
-                    <p>Business owners who need coverage</p>
-                </div>
-            </div>
-            <div class="use-case">
-                <span class="use-case-icon">&#9728;&#65039;</span>
-                <div>
-                    <h4>Solar Sales Teams</h4>
-                    <p>Commercial property leads by city</p>
-                </div>
-            </div>
-            <div class="use-case">
-                <span class="use-case-icon">&#128200;</span>
-                <div>
-                    <h4>Marketing Agencies</h4>
-                    <p>Niche-specific prospect lists</p>
-                </div>
-            </div>
-            <div class="use-case">
-                <span class="use-case-icon">&#128222;</span>
-                <div>
-                    <h4>Appointment Setters</h4>
-                    <p>Verified phone numbers ready to dial</p>
-                </div>
-            </div>
-        </div>
+<!-- ========== WHO IT'S FOR ========== -->
+<section id="usecases">
+  <div class="container">
+    <div style="text-align:center; margin-bottom:48px;" class="animate-on-scroll">
+      <span class="section-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Built for closers
+      </span>
+      <h2 class="section-title">Who uses <span class="gradient-text">MapMine</span></h2>
     </div>
+
+    <div class="usecases-grid">
+      <div class="usecase-card animate-on-scroll">
+        <div class="usecase-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+        </div>
+        <div>
+          <div class="usecase-title">Cold Email Agencies</div>
+          <div class="usecase-desc">Feed thousands of verified contacts into your campaigns</div>
+        </div>
+      </div>
+      <div class="usecase-card animate-on-scroll">
+        <div class="usecase-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div>
+          <div class="usecase-title">Real Estate Agents</div>
+          <div class="usecase-desc">Find local businesses for commercial property leads</div>
+        </div>
+      </div>
+      <div class="usecase-card animate-on-scroll">
+        <div class="usecase-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div>
+          <div class="usecase-title">Insurance Prospectors</div>
+          <div class="usecase-desc">Target businesses in specific regions for policies</div>
+        </div>
+      </div>
+      <div class="usecase-card animate-on-scroll">
+        <div class="usecase-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </div>
+        <div>
+          <div class="usecase-title">Solar Sales</div>
+          <div class="usecase-desc">Find roofing companies, contractors, and homeowners</div>
+        </div>
+      </div>
+      <div class="usecase-card animate-on-scroll">
+        <div class="usecase-icon">
+          <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+        </div>
+        <div>
+          <div class="usecase-title">Marketing Agencies</div>
+          <div class="usecase-desc">Build prospect lists for local business clients</div>
+        </div>
+      </div>
+      <div class="usecase-card animate-on-scroll">
+        <div class="usecase-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        </div>
+        <div>
+          <div class="usecase-title">Appointment Setters</div>
+          <div class="usecase-desc">Get direct phone numbers to fill your calendar</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- FAQ -->
-<section>
-    <div class="container">
-        <div class="text-center">
-            <p class="section-label">FAQ</p>
-            <h2 class="section-title">Common questions</h2>
-            <p class="section-desc center">Everything you need to know before ordering.</p>
-        </div>
-        <div class="faq-list">
-            <div class="faq-item">
-                <input type="checkbox" id="faq1" class="faq-toggle">
-                <label for="faq1" class="faq-question">
-                    <h4>How accurate are the emails?</h4>
-                    <span class="faq-arrow">+</span>
-                </label>
-                <div class="faq-answer">
-                    <p>We verify every email domain before delivery. Invalid or catch-all domains are flagged. If more than 5% of emails bounce, we provide free replacements.</p>
-                </div>
-            </div>
-            <div class="faq-item">
-                <input type="checkbox" id="faq2" class="faq-toggle">
-                <label for="faq2" class="faq-question">
-                    <h4>What format do I get the data in?</h4>
-                    <span class="faq-arrow">+</span>
-                </label>
-                <div class="faq-answer">
-                    <p>CSV by default. Excel (.xlsx) or Google Sheets link available on request. All formats include the same verified data fields.</p>
-                </div>
-            </div>
-            <div class="faq-item">
-                <input type="checkbox" id="faq3" class="faq-toggle">
-                <label for="faq3" class="faq-question">
-                    <h4>Do you cover international cities?</h4>
-                    <span class="faq-arrow">+</span>
-                </label>
-                <div class="faq-answer">
-                    <p>Yes. We can scrape any location with Google Maps coverage -- US, Canada, UK, Australia, Europe, and more. Just tell us the city.</p>
-                </div>
-            </div>
-            <div class="faq-item">
-                <input type="checkbox" id="faq4" class="faq-toggle">
-                <label for="faq4" class="faq-question">
-                    <h4>How fast is delivery?</h4>
-                    <span class="faq-arrow">+</span>
-                </label>
-                <div class="faq-answer">
-                    <p>Most orders are delivered within 24 hours. Pro tier orders often ship same-day. Enterprise orders with large volumes may take up to 48 hours.</p>
-                </div>
-            </div>
-            <div class="faq-item">
-                <input type="checkbox" id="faq5" class="faq-toggle">
-                <label for="faq5" class="faq-question">
-                    <h4>What is your refund policy?</h4>
-                    <span class="faq-arrow">+</span>
-                </label>
-                <div class="faq-answer">
-                    <p>If more than 5% of emails bounce, we provide free replacement leads. We stand behind every order -- if the data quality is not what we promised, we make it right.</p>
-                </div>
-            </div>
-        </div>
+<!-- ========== FAQ ========== -->
+<section id="faq">
+  <div class="container">
+    <div class="faq-section">
+      <div style="text-align:center; margin-bottom:48px;" class="animate-on-scroll">
+        <span class="section-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Common questions
+        </span>
+        <h2 class="section-title">Frequently asked <span class="gradient-text">questions</span></h2>
+      </div>
+
+      <div class="faq-list">
+        <details class="animate-on-scroll">
+          <summary>How accurate is the data?</summary>
+          <div class="faq-answer">Our data is scraped directly from Google Maps in real-time, so it reflects what's currently live. Phone numbers and addresses come straight from business listings. Emails are verified before delivery. We consistently achieve 99%+ accuracy on phone numbers and addresses, and 95%+ on email deliverability.</div>
+        </details>
+        <details class="animate-on-scroll">
+          <summary>What format do I get the data in?</summary>
+          <div class="faq-answer">All plans include CSV files that work with Excel, Google Sheets, and any CRM (HubSpot, Salesforce, Instantly, Smartlead, etc.). Pro and Enterprise plans also include formatted Excel files with filtered columns ready for immediate use.</div>
+        </details>
+        <details class="animate-on-scroll">
+          <summary>Can you scrape businesses outside the US?</summary>
+          <div class="faq-answer">Yes. We can scrape any location covered by Google Maps, including Canada, UK, Australia, and most other countries. Just specify the city and country in your order. International orders use the same pricing and turnaround times.</div>
+        </details>
+        <details class="animate-on-scroll">
+          <summary>How fast is delivery?</summary>
+          <div class="faq-answer">Starter orders are delivered within 24 hours. Pro orders ship same-day (typically within 4-6 hours). Enterprise orders with custom requirements are delivered within 24-48 hours depending on volume. You'll receive your file via email.</div>
+        </details>
+        <details class="animate-on-scroll">
+          <summary>What's your refund policy?</summary>
+          <div class="faq-answer">If the data doesn't meet the accuracy standards we promise, we'll re-scrape at no cost or issue a full refund. We stand behind every order. If you're not satisfied, email us within 7 days of delivery and we'll make it right.</div>
+        </details>
+      </div>
     </div>
+  </div>
 </section>
 
-<!-- FINAL CTA -->
+<!-- ========== FINAL CTA ========== -->
 <section class="final-cta">
-    <div class="container">
-        <h2>Ready to fill your pipeline?</h2>
-        <p>Email us your niche and city. Leads in your inbox tomorrow.</p>
-        <a href="mailto:zethgdev@gmail.com?subject=Lead%20Order&body=I%20need%20leads%20for%20[niche]%20in%20[city]." class="btn-primary">Order Now</a>
-    </div>
+  <div class="container animate-on-scroll">
+    <h2 class="section-title">Ready to fill your<br><span class="gradient-text">sales pipeline?</span></h2>
+    <p>Email your niche and city. Leads in your inbox by tomorrow.</p>
+    <a href="mailto:zethgdev@gmail.com?subject=MapMine%20%E2%80%94%20I%20need%20leads&body=Niche%3A%20%0ACity%3A%20%0AHow%20many%20leads%3A%20" class="btn btn-primary">
+      Get Your Leads Now
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
 </section>
 
-<!-- FOOTER -->
+<!-- ========== FOOTER ========== -->
 <footer>
-    <div class="container">
-        <div class="footer-grid">
-            <div class="footer-brand">
-                <a href="#" class="logo"><span>Map</span>Mine</a>
-                <p>Google Maps leads, scraped fresh and delivered clean. Any niche. Any city.</p>
-            </div>
-            <div class="footer-col">
-                <h4>Contact</h4>
-                <a href="mailto:zethgdev@gmail.com">zethgdev@gmail.com</a>
-                <a href="https://www.reddit.com/user/ComfortableNice8482" target="_blank" rel="noopener">Reddit: u/ComfortableNice8482</a>
-            </div>
-            <div class="footer-col">
-                <h4>Quick Links</h4>
-                <a href="#pricing">Pricing</a>
-                <a href="#sample">Sample Data</a>
-                <a href="mailto:zethgdev@gmail.com?subject=Lead%20Order&body=I%20need%20leads%20for%20[niche]%20in%20[city]." target="_blank">Order Now</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            MapMine &mdash; 2026. All rights reserved.
-        </div>
+  <div class="container">
+    <div class="footer-left">
+      <span class="footer-brand">MapMine</span>
+      <ul class="footer-links">
+        <li><a href="mailto:zethgdev@gmail.com">zethgdev@gmail.com</a></li>
+        <li><a href="https://reddit.com/user/ComfortableNice8482" target="_blank" rel="noopener">Reddit</a></li>
+      </ul>
     </div>
+    <span class="footer-copy">&copy; 2026 MapMine. All rights reserved.</span>
+  </div>
 </footer>
 
 </body>
