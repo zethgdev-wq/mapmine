@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapMine — Business Data On Demand</title>
+    <meta name="description" content="We scrape Google Maps and deliver clean lead lists. Any niche. Any city. Same day.">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0f1a;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2332;
+            --cyan: #00d4ff;
+            --cyan-dim: rgba(0, 212, 255, 0.15);
+            --cyan-glow: rgba(0, 212, 255, 0.3);
+            --white: #f0f4f8;
+            --gray: #8899aa;
+            --gray-light: #c0cdd8;
+            --border: #1e2a3a;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--white);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 1px 1px, rgba(0, 212, 255, 0.06) 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ---- NAV ---- */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 16px 0;
+            background: rgba(10, 15, 26, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--cyan);
+            letter-spacing: 2px;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--white);
+        }
+
+        .nav-cta {
+            display: inline-block;
+            padding: 8px 20px;
+            background: var(--cyan);
+            color: var(--bg);
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-decoration: none;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+            transition: box-shadow 0.3s, transform 0.2s;
+        }
+
+        .nav-cta:hover {
+            box-shadow: 0 0 20px var(--cyan-glow);
+            transform: translateY(-1px);
+        }
+
+        /* ---- HERO ---- */
+        .hero {
+            padding: 160px 0 100px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .hero h1 .accent {
+            color: var(--cyan);
+        }
+
+        .hero .subtitle {
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
+            color: var(--gray-light);
+            max-width: 640px;
+            margin: 0 auto 40px;
+            line-height: 1.7;
+        }
+
+        .hero-cta {
+            display: inline-block;
+            padding: 16px 40px;
+            background: var(--cyan);
+            color: var(--bg);
+            font-weight: 800;
+            font-size: 1.05rem;
+            text-decoration: none;
+            border-radius: 8px;
+            letter-spacing: 0.5px;
+            transition: box-shadow 0.3s, transform 0.2s;
+        }
+
+        .hero-cta:hover {
+            box-shadow: 0 0 30px var(--cyan-glow), 0 0 60px rgba(0, 212, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            margin-top: 60px;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat .num {
+            font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--cyan);
+        }
+
+        .hero-stat .label {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        /* ---- SECTIONS ---- */
+        section {
+            padding: 80px 0;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--cyan);
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .section-desc {
+            color: var(--gray);
+            max-width: 560px;
+            margin-bottom: 48px;
+            font-size: 1.05rem;
+        }
+
+        .section-desc.center {
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* ---- WHAT YOU GET ---- */
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+
+        .data-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px 16px;
+            text-align: center;
+            transition: border-color 0.3s, transform 0.2s;
+        }
+
+        .data-item:hover {
+            border-color: var(--cyan);
+            transform: translateY(-3px);
+        }
+
+        .data-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 12px;
+            background: var(--cyan-dim);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .data-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--cyan);
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .data-item h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* ---- HOW IT WORKS ---- */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+        }
+
+        .step {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px 28px;
+            position: relative;
+        }
+
+        .step-num {
+            font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 3rem;
+            font-weight: 900;
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            line-height: 1;
+            color: rgba(0, 212, 255, 0.12);
+        }
+
+        .step h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: var(--cyan);
+        }
+
+        .step p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        /* ---- PRICING ---- */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .price-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 36px 28px;
+            text-align: center;
+            transition: border-color 0.3s, transform 0.3s;
+            position: relative;
+        }
+
+        .price-card:hover {
+            border-color: var(--cyan);
+            transform: translateY(-4px);
+        }
+
+        .price-card.featured {
+            border-color: var(--cyan);
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.08);
+        }
+
+        .price-card.featured::before {
+            content: 'MOST POPULAR';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--cyan);
+            color: var(--bg);
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            padding: 4px 16px;
+            border-radius: 20px;
+        }
+
+        .price-tier {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gray);
+            margin-bottom: 16px;
+        }
+
+        .price-amount {
+            font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: var(--white);
+            margin-bottom: 4px;
+        }
+
+        .price-amount .currency {
+            font-size: 1.4rem;
+            vertical-align: top;
+            position: relative;
+            top: 8px;
+            color: var(--cyan);
+        }
+
+        .price-period {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-bottom: 24px;
+        }
+
+        .price-features {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 28px;
+        }
+
+        .price-features li {
+            padding: 8px 0;
+            color: var(--gray-light);
+            font-size: 0.92rem;
+            border-bottom: 1px solid rgba(30, 42, 58, 0.6);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .price-features li::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--cyan);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .price-features li:last-child {
+            border-bottom: none;
+        }
+
+        .price-btn {
+            display: inline-block;
+            width: 100%;
+            padding: 14px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+        }
+
+        .price-btn-outline {
+            border: 2px solid var(--border);
+            color: var(--white);
+        }
+
+        .price-btn-outline:hover {
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+
+        .price-btn-fill {
+            background: var(--cyan);
+            color: var(--bg);
+        }
+
+        .price-btn-fill:hover {
+            box-shadow: 0 0 24px var(--cyan-glow);
+        }
+
+        /* ---- SAMPLE TABLE ---- */
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-card);
+        }
+
+        .table-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        .table-wrap th {
+            background: rgba(0, 212, 255, 0.06);
+            font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--cyan);
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table-wrap td {
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            color: var(--gray-light);
+            border-bottom: 1px solid rgba(30, 42, 58, 0.5);
+        }
+
+        .table-wrap tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-wrap tr:hover td {
+            background: rgba(0, 212, 255, 0.03);
+        }
+
+        .rating {
+            color: var(--cyan);
+            font-weight: 600;
+        }
+
+        /* ---- SOCIAL PROOF ---- */
+        .proof-bar {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
+            padding: 48px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .proof-item {
+            text-align: center;
+        }
+
+        .proof-item .big {
+            font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--white);
+        }
+
+        .proof-item .big .cyan {
+            color: var(--cyan);
+        }
+
+        .proof-item .sub {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        /* ---- FINAL CTA ---- */
+        .final-cta {
+            text-align: center;
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .final-cta::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .final-cta h2 {
+            font-size: clamp(1.8rem, 4vw, 2.6rem);
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .final-cta p {
+            color: var(--gray);
+            font-size: 1.1rem;
+            margin-bottom: 36px;
+            position: relative;
+        }
+
+        .final-cta .hero-cta {
+            position: relative;
+        }
+
+        /* ---- FOOTER ---- */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 48px 0 36px;
+        }
+
+        .footer-grid {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 32px;
+        }
+
+        .footer-brand .logo {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .footer-brand p {
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        .footer-contact h4 {
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gray);
+            margin-bottom: 12px;
+        }
+
+        .footer-contact a {
+            display: block;
+            color: var(--gray-light);
+            text-decoration: none;
+            font-size: 0.92rem;
+            margin-bottom: 8px;
+            transition: color 0.2s;
+        }
+
+        .footer-contact a:hover {
+            color: var(--cyan);
+        }
+
+        .footer-bottom {
+            margin-top: 36px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--gray);
+            font-size: 0.8rem;
+        }
+
+        /* ---- DIVIDER ---- */
+        .divider {
+            width: 60px;
+            height: 3px;
+            background: var(--cyan);
+            border-radius: 2px;
+            margin-bottom: 32px;
+        }
+
+        .divider.center {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ---- RESPONSIVE ---- */
+        @media (max-width: 768px) {
+            .hero { padding: 130px 0 60px; }
+            section { padding: 60px 0; }
+            .hero-stats { gap: 28px; }
+            .proof-bar { gap: 32px; }
+            .data-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+            .data-item { padding: 18px 12px; }
+            .pricing-grid { gap: 16px; }
+            .footer-grid { flex-direction: column; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.8rem; }
+            .hero-cta { padding: 14px 28px; font-size: 0.95rem; }
+            .data-grid { grid-template-columns: repeat(2, 1fr); }
+            .steps { grid-template-columns: 1fr; }
+            .pricing-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <div class="container">
+        <a href="#" class="logo"><span>Map</span>Mine</a>
+        <a href="https://www.reddit.com/message/compose/?to=ComfortableNice8482&subject=Lead%20Order&message=I%20need%20leads%20for%20[niche]%20in%20[city].%20[Starter/Pro/Monthly]%20tier." target="_blank" class="nav-cta">Get Your Leads</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="container">
+        <h1><span class="accent">MapMine</span> &mdash; Business Data<br>On Demand</h1>
+        <p class="subtitle">We scrape Google Maps and deliver clean lead lists. Any niche. Any city. Same day.</p>
+        <a href="https://www.reddit.com/message/compose/?to=ComfortableNice8482&subject=Lead%20Order&message=I%20need%20leads%20for%20[niche]%20in%20[city].%20[Starter/Pro/Monthly]%20tier." target="_blank" class="hero-cta">Get Your Leads</a>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="num">5,000+</div>
+                <div class="label">Businesses Scraped</div>
+            </div>
+            <div class="hero-stat">
+                <div class="num">20+</div>
+                <div class="label">US Cities</div>
+            </div>
+            <div class="hero-stat">
+                <div class="num">&lt;24h</div>
+                <div class="label">Delivery Time</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- WHAT YOU GET -->
+<section>
+    <div class="container">
+        <p class="section-label">What You Get</p>
+        <h2 class="section-title">Every Data Point That Matters</h2>
+        <div class="divider"></div>
+        <p class="section-desc">Each lead is verified and formatted. No duplicates, no blanks, no garbage data. Delivered as a Google Sheet or CSV file.</p>
+        <div class="data-grid">
+            <div class="data-item">
+                <div class="data-icon">
+                    <svg viewBox="0 0 24 24"><path d="M3 21h18M9 8h1M9 12h1M9 16h1M14 8h1M14 12h1M14 16h1M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16"/></svg>
+                </div>
+                <h4>Business Name</h4>
+            </div>
+            <div class="data-item">
+                <div class="data-icon">
+                    <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+                </div>
+                <h4>Phone</h4>
+            </div>
+            <div class="data-item">
+                <div class="data-icon">
+                    <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </div>
+                <h4>Email</h4>
+            </div>
+            <div class="data-item">
+                <div class="data-icon">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                </div>
+                <h4>Website</h4>
+            </div>
+            <div class="data-item">
+                <div class="data-icon">
+                    <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <h4>Rating</h4>
+            </div>
+            <div class="data-item">
+                <div class="data-icon">
+                    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                </div>
+                <h4>Reviews</h4>
+            </div>
+            <div class="data-item">
+                <div class="data-icon">
+                    <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
+                <h4>Address</h4>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section>
+    <div class="container text-center">
+        <p class="section-label">How It Works</p>
+        <h2 class="section-title">Three Steps. Zero Effort.</h2>
+        <div class="divider center"></div>
+        <p class="section-desc center">You tell us what you need. We handle every technical detail.</p>
+    </div>
+    <div class="container">
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">01</div>
+                <h3>Tell Us Your Target</h3>
+                <p>Pick your niche and city. "Plumbers in Dallas" or "Dentists in Miami" -- whatever vertical you are selling into.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">02</div>
+                <h3>We Scrape Google Maps</h3>
+                <p>Our pipeline pulls data from Google Places API, deduplicates, validates phone and email, and normalizes every record.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">03</div>
+                <h3>You Get Clean Data</h3>
+                <p>Receive a formatted Google Sheet or CSV within 24 hours. Ready to import into your CRM, dialer, or email tool.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+    <div class="container text-center">
+        <p class="section-label">Pricing</p>
+        <h2 class="section-title">Simple. Transparent. No Hidden Fees.</h2>
+        <div class="divider center"></div>
+    </div>
+    <div class="container">
+        <div class="pricing-grid">
+            <div class="price-card">
+                <div class="price-tier">Starter</div>
+                <div class="price-amount"><span class="currency">$</span>200</div>
+                <div class="price-period">one-time</div>
+                <ul class="price-features">
+                    <li>500 verified leads</li>
+                    <li>1 city</li>
+                    <li>1 niche</li>
+                    <li>Google Sheet + CSV delivery</li>
+                    <li>24-hour turnaround</li>
+                </ul>
+                <a href="https://www.reddit.com/message/compose/?to=ComfortableNice8482&subject=Lead%20Order&message=I%20need%20leads%20for%20[niche]%20in%20[city].%20[Starter/Pro/Monthly]%20tier." target="_blank" class="price-btn price-btn-outline">Get Started</a>
+            </div>
+            <div class="price-card featured">
+                <div class="price-tier">Pro</div>
+                <div class="price-amount"><span class="currency">$</span>500</div>
+                <div class="price-period">one-time</div>
+                <ul class="price-features">
+                    <li>2,000 verified leads</li>
+                    <li>Up to 5 cities</li>
+                    <li>Multiple niches</li>
+                    <li>Google Sheet + CSV delivery</li>
+                    <li>Priority turnaround</li>
+                </ul>
+                <a href="https://www.reddit.com/message/compose/?to=ComfortableNice8482&subject=Lead%20Order&message=I%20need%20leads%20for%20[niche]%20in%20[city].%20[Starter/Pro/Monthly]%20tier." target="_blank" class="price-btn price-btn-fill">Get Started</a>
+            </div>
+            <div class="price-card">
+                <div class="price-tier">Monthly</div>
+                <div class="price-amount"><span class="currency">$</span>299</div>
+                <div class="price-period">per month</div>
+                <ul class="price-features">
+                    <li>500 fresh leads / month</li>
+                    <li>Auto-refreshed data</li>
+                    <li>No duplicates from prior months</li>
+                    <li>Google Sheet + CSV delivery</li>
+                    <li>Cancel anytime</li>
+                </ul>
+                <a href="https://www.reddit.com/message/compose/?to=ComfortableNice8482&subject=Lead%20Order&message=I%20need%20leads%20for%20[niche]%20in%20[city].%20[Starter/Pro/Monthly]%20tier." target="_blank" class="price-btn price-btn-outline">Subscribe</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SAMPLE DATA -->
+<section>
+    <div class="container">
+        <p class="section-label">Sample Data</p>
+        <h2 class="section-title">See What You Get</h2>
+        <div class="divider"></div>
+        <p class="section-desc">Real format. Real quality. Every row verified before delivery.</p>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Business Name</th>
+                        <th>Phone</th>
+                        <th>Website</th>
+                        <th>Rating</th>
+                        <th>Reviews</th>
+                        <th>City</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Ace Plumbing Co.</td>
+                        <td>(214) 555-0132</td>
+                        <td>aceplumbingdallas.com</td>
+                        <td class="rating">4.8</td>
+                        <td>312</td>
+                        <td>Dallas, TX</td>
+                    </tr>
+                    <tr>
+                        <td>RapidFlow Plumbing</td>
+                        <td>(214) 555-0278</td>
+                        <td>rapidflowplumbing.com</td>
+                        <td class="rating">4.6</td>
+                        <td>187</td>
+                        <td>Dallas, TX</td>
+                    </tr>
+                    <tr>
+                        <td>Lone Star Drain Pros</td>
+                        <td>(972) 555-0419</td>
+                        <td>lonestardrains.com</td>
+                        <td class="rating">4.9</td>
+                        <td>541</td>
+                        <td>Plano, TX</td>
+                    </tr>
+                    <tr>
+                        <td>AllClear Plumbing &amp; HVAC</td>
+                        <td>(469) 555-0653</td>
+                        <td>allclearphvac.com</td>
+                        <td class="rating">4.7</td>
+                        <td>229</td>
+                        <td>Arlington, TX</td>
+                    </tr>
+                    <tr>
+                        <td>PipeMaster Services</td>
+                        <td>(817) 555-0891</td>
+                        <td>pipemasterfw.com</td>
+                        <td class="rating">4.5</td>
+                        <td>98</td>
+                        <td>Fort Worth, TX</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section>
+    <div class="container">
+        <div class="proof-bar">
+            <div class="proof-item">
+                <div class="big">5,000<span class="cyan">+</span></div>
+                <div class="sub">Businesses scraped</div>
+            </div>
+            <div class="proof-item">
+                <div class="big">20<span class="cyan">+</span></div>
+                <div class="sub">US cities covered</div>
+            </div>
+            <div class="proof-item">
+                <div class="big"><span class="cyan">&lt;</span>24h</div>
+                <div class="sub">Average delivery time</div>
+            </div>
+            <div class="proof-item">
+                <div class="big">99<span class="cyan">%</span></div>
+                <div class="sub">Data accuracy rate</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+    <div class="container">
+        <h2>Ready to Fill Your Pipeline?</h2>
+        <p>Stop searching. Start closing. Get verified leads delivered to your inbox today.</p>
+        <a href="https://www.reddit.com/message/compose/?to=ComfortableNice8482&subject=Lead%20Order&message=I%20need%20leads%20for%20[niche]%20in%20[city].%20[Starter/Pro/Monthly]%20tier." target="_blank" class="hero-cta">Get Your Leads</a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="#" class="logo"><span>Map</span>Mine</a>
+                <p>Business data, extracted and delivered.</p>
+            </div>
+            <div class="footer-contact">
+                <h4>Contact</h4>
+                <a href="https://www.reddit.com/user/ComfortableNice8482" target="_blank" rel="noopener">Reddit: u/ComfortableNice8482</a>
+                <a href="mailto:zethgdev@gmail.com">Email: zethgdev@gmail.com</a>
+            </div>
+            <div class="footer-contact">
+                <h4>Quick Links</h4>
+                <a href="#pricing">Pricing</a>
+                <a href="https://www.reddit.com/message/compose/?to=ComfortableNice8482&subject=Lead%20Order&message=I%20need%20leads%20for%20[niche]%20in%20[city].%20[Starter/Pro/Monthly]%20tier." target="_blank">Order Now</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            MapMine &mdash; 2026. All rights reserved.
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
